@@ -94,10 +94,29 @@ lemma TateNorm_comp_d (M : Rep R G) : TateNorm M ≫ (inhomogeneousCochains M).d
   rw [comp_eq_zero]
   simp
 
-lemma d_comp_TateNorm (M : Rep R G) : (inhomogeneousChains M).d 1 0 ≫ TateNorm M  = 0 :=
+
+lemma d_comp_TateNorm (M : Rep R G) : (inhomogeneousChains M).d 1 0 ≫ TateNorm M  = 0 :=by
+  ext s hs v
+  have:(0:↑(ModuleCat.of R ((Fin 0 → G) → ↑M.V))) v=0 :=by rfl
+  simpa [ModuleCat.of_coe, CochainComplex.of_x, ChainComplex.of, inhomogeneousChains.d,
+    zero_add, ↓reduceDIte, TateNorm, zeroChainsIso,Rep.norm, Representation.norm, cochainsIso₀,
+    this,← sub_eq_add_neg]
+  using sub_eq_zero.mpr (Finset.sum_equiv ⟨fun n ↦ n * (s 0)⁻¹ ,fun n ↦n * (s 0),fun _ ↦by simp,
+fun _ ↦ by simp⟩ (fun i  ↦  by simp) (fun i hi ↦ (  by
+  have l1:((fun₀ | fun (i : Fin 0) ↦ s (i.succ) => (M.ρ (s 0)⁻¹) hs) default) =(M.ρ (s 0)⁻¹)  hs :=by
+    simp only [Finsupp.single, Fin.isValue, Finsupp.coe_mk,Pi.single, Function.update]
+    refine dite_eq_iff.mpr ( Or.symm (Or.inr (Exists.of_psigma_prop (by
+     simpa using  ⟨List.ofFn_inj.mp rfl, by simp⟩))))
+  have l2: ((fun₀ | Fin.contractNth 0 (fun x1 x2 ↦ x1 * x2) s => hs) default)= hs :=by
+     have:default = Fin.contractNth 0 (fun x1 x2 ↦ x1 * x2) s :=List.ofFn_inj.mp rfl
+     simp only [ModuleCat.of_coe, Finsupp.single, Fin.isValue, Pi.single, this, Finsupp.coe_mk,
+       Function.update, ↓reduceDIte]
+  simp only [Fin.isValue, l1, Equiv.coe_fn_mk, map_mul, l2, Module.End.mul_apply]
+
+)
+))
 
 
-  sorry
 
 def TateComplex.ConnectData (M : Rep R G) :
     CochainComplex.ConnectData (inhomogeneousChains M) (inhomogeneousCochains M) where
@@ -161,7 +180,6 @@ def TateComplexFunctor : Rep R G ⥤ CochainComplex (ModuleCat R) ℤ where
         ext i
         simp at i
         simp [TateNorm, cochainsIso₀, groupHomology.zeroChainsIso]
-
         sorry else
         sorry
   }
