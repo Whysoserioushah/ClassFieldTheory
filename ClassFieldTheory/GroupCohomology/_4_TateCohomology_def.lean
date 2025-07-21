@@ -165,7 +165,10 @@ def TateComplexFunctor : Rep R G ⥤ CochainComplex (ModuleCat R) ℤ where
         sorry else
         sorry
   }
-  map_id := sorry
+  map_id _ := by
+    ext _ _
+    simp
+    split <;> rfl
   map_comp := sorry
 #synth Subsingleton (Fin 0)
 def TateCohomology (n : ℤ) : Rep R G ⥤ ModuleCat R :=
