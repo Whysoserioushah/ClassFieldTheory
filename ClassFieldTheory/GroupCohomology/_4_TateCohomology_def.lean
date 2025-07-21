@@ -175,8 +175,9 @@ def TateCohomology (n : ℤ) : Rep R G ⥤ ModuleCat R :=
 The next two statements say that `TateComplexFunctor` is an exact functor.
 -/
 instance TateComplexFunctor_preservesFiniteLimits :
-    PreservesFiniteLimits (TateComplexFunctor (R := R) (G := G)) :=
-  sorry
+    PreservesFiniteLimits (TateComplexFunctor (R := R) (G := G)) where
+      preservesFiniteLimits J ij sij :=
+        sorry
 
 instance TateComplexFunctor_preservesFiniteColimits :
     PreservesFiniteColimits (TateComplexFunctor (R := R) (G := G)) :=
@@ -193,18 +194,35 @@ noncomputable abbrev TateCohomology.δ {S : ShortComplex (Rep R G)} (hS : S.Shor
     (n : ℤ) : (TateCohomology n).obj S.X₃ ⟶ (TateCohomology (n + 1)).obj S.X₁ :=
   (TateCohomology.cochainsFunctor_Exact hS).δ n (n + 1) rfl
 
+
+#check HomologicalComplex.homologyFunctor
+
+
+
 def TateCohomology.iso_groupCohomology (n : ℕ) (M : Rep R G) :
-    TateCohomology (n + 1) ≅ groupCohomology.functor R G (n + 1) := by
+    (TateCohomology (n + 1)).obj M ≅ groupCohomology M (n + 1) := by
   convert Iso.refl _
-  sorry
+  simp only [groupCohomology, HomologicalComplex.homology, HomologicalComplex.sc,
+    HomologicalComplex.shortComplexFunctor, CochainComplex.prev_nat_succ, CochainComplex.next,
+    TateCohomology, Functor.comp_obj, HomologicalComplex.homologyFunctor_obj, CochainComplex.prev,
+    add_sub_cancel_right]
+  exact rfl
+
+
+#check CochainComplex.ConnectData.homologyIsoNeg
 
 def TateCohomology.iso_groupHomology (n : ℕ) (M : Rep R G) :
     (TateCohomology (-n - 2)).obj M ≅ groupHomology M (n + 1) := by
-  convert Iso.refl _
-  sorry
+  simp only [groupHomology, TateCohomology, TateComplexFunctor, cochainsFunctor_obj,
+    cochainsFunctor_map, Functor.comp_obj, HomologicalComplex.homologyFunctor_obj,
+    TateComplex]
+  refine (TateComplex.ConnectData M).homologyIsoNeg n _ (by
+  simp only [Nat.cast_add, Nat.cast_ofNat,
+    neg_add_rev, Int.reduceNeg] ; ring )
 
+#check IsHomLift.domain_eq (TateCohomology 0)
 def TateCohomology_zero_iso (M : Rep R G) : (TateCohomology 0).obj M ≅
-    ModuleCat.of R (M.ρ.invariants ⧸ (range M.ρ.norm).submoduleOf M.ρ.invariants) :=
+    ModuleCat.of R (M.ρ.invariants ⧸ (range M.ρ.norm).submoduleOf M.ρ.invariants) :=by
   sorry
 
 def TateCohomology_neg_one_iso (M : Rep R G) : (TateCohomology (-1)).obj M ≅
