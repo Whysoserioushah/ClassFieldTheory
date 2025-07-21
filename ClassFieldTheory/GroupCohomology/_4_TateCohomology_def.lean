@@ -38,7 +38,23 @@ namespace groupCohomology
 def _root_.groupHomology.zeroChainsIso (M : Rep R G) : (inhomogeneousChains M).X 0 ≅ M.V :=
   LinearEquiv.toModuleIso (Finsupp.LinearEquiv.finsuppUnique R (↑M.V) (Fin 0 → G))
 
+omit [Finite G] in
+@[simp]
+lemma _root_.groupHomology.zeroChainsIso_hom_single_apply (M : Rep R G) (g : Fin 0 → G) (x : M) :
+    (zeroChainsIso M).hom ((Finsupp.lsingle (R := R) g) x) = x := by
+  simp only [ChainComplex.of_x, zeroChainsIso, LinearEquiv.toModuleIso_hom, ModuleCat.hom_ofHom,
+    Finsupp.lsingle_apply, LinearEquiv.coe_coe]
+  refine (LinearEquiv.eq_symm_apply (Finsupp.LinearEquiv.finsuppUnique R (↑M.V) (Fin 0 → G))).mp ?_
+  simp
+
 def _root_.Rep.norm (M : Rep R G) : M.V ⟶ M.V := ModuleCat.ofHom M.ρ.norm
+
+omit [DecidableEq G] in
+@[simp]
+lemma _root_.Rep.norm_apply (M : Rep R G) (x : M) :
+  letI := Fintype.ofFinite G
+  norm M x = ∑ g, (M.ρ g) x := by
+  simp [Rep.norm]
 
 /--
 This is the map from the coinvariants of `M : Rep R G` to the invariants, induced by the map
