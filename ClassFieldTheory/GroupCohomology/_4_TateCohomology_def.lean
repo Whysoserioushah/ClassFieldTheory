@@ -166,15 +166,18 @@ def TateComplexFunctor : Rep R G ⥤ CochainComplex (ModuleCat R) ℤ where
         sorry
   }
   map_id := sorry
-  map_comp := by
-    intro X Y Z f g
+  map_comp f g := by
     ext _ _
     simp
     split
-    exact cochainsMap_id_comp f g
-
-    -- intro X Y Z f g
-    -- exact cochainsMap_id_comp f g
+    · change _ = (ModuleCat.Hom.hom ((cochainsMap (MonoidHom.id G) g).f _) ∘ₗ
+        (ModuleCat.Hom.hom ((cochainsMap (MonoidHom.id G) f).f _))) _
+      exact congrFun rfl _
+    · change _ = (ModuleCat.Hom.hom ((chainsMap (MonoidHom.id G) g).f _) ∘ₗ
+        (ModuleCat.Hom.hom ((chainsMap (MonoidHom.id G) f).f _))) _
+      refine congrFun ?_ _
+      rw [← ModuleCat.hom_comp, chainsMap_id_comp]
+      rfl
 
 
 #synth Subsingleton (Fin 0)
