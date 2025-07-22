@@ -314,8 +314,40 @@ def TateCohomology_neg_one_iso (M : Rep R G) : (TateCohomology (-1)).obj M ≅
   sorry
 
 def TateCohomology_zero_iso_of_isTrivial (M : Rep R G) [M.ρ.IsTrivial] : (TateCohomology 0).obj M ≅
-    ModuleCat.of R (M.V ⧸ (range (Nat.card G : M.V →ₗ[R] M.V))) :=
-  sorry
+    ModuleCat.of R (M.V ⧸ (range (Nat.card G : M.V →ₗ[R] M.V))) := calc
+
+  (TateCohomology 0).obj M ≅ (ModuleCat.of R ( M.ρ.invariants ⧸
+    (range M.ρ.norm).submoduleOf M.ρ.invariants)) :=TateCohomology.zeroIso M
+  _ ≅ _ :=by
+    let I:Fintype G := Fintype.ofFinite G
+    refine (Submodule.Quotient.equiv _ _ (LinearEquiv.ofTop M.ρ.invariants
+     (Representation.invariants_eq_top M.ρ)) (Submodule.ext ( fun x => ?_))).toModuleIso
+    constructor
+    · intro i
+      simp
+      simp only [Submodule.mem_map] at i
+      choose u su1 su2 using i
+      choose m su3 using (LinearMap.mem_range.mp su1)
+      use m
+      have: M.ρ.norm m=Fintype.card  G • m :=by
+        simp only [Representation.norm, Representation.isTrivial_def, Finset.sum_const,
+          Finset.card_univ, nsmul_eq_mul, Module.End.mul_apply, id_coe, id_eq,
+          Module.End.natCast_apply, Fintype.card_eq_nat_card]
+      simp only [Submodule.subtype_apply, ← this, ← su2, LinearEquiv.ofTop_apply] at su3 ⊢
+      exact su3
+    · intro i
+      simp at i
+      simp only [Submodule.mem_map]
+      choose u su1  using i
+      use ⟨M.ρ.norm u,(Representation.mem_invariants M.ρ (M.ρ.norm u)).mpr (fun g ↦by simpa using
+          (congrFun (Representation.norm_comm _ g) u))⟩
+      constructor
+      · simp[Submodule.submoduleOf,Representation.invariants]
+      simp only [Representation.norm, Representation.isTrivial_def, Finset.sum_const,
+        Finset.card_univ, nsmul_eq_mul, Module.End.mul_apply, id_coe, id_eq,
+        Module.End.natCast_apply, LinearEquiv.ofTop_apply, ← su1]
+
+
 
 def TateCohomology_neg_one_iso_of_isTrivial (M : Rep R G) [M.ρ.IsTrivial] :
     (TateCohomology (-1)).obj M ≅ ModuleCat.of R (ker (Nat.card G : M.V →ₗ[R] M.V)):=
