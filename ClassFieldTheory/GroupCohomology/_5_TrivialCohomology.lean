@@ -172,6 +172,7 @@ lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
     exact (res H.subtype).mapIso f
   exact (TrivialTateCohomology.isZero H).of_iso this
 
+-- def 
 #exit
 lemma isZero_of_trivialTateCohomology [Finite G] [DecidableEq G] {M : Rep R G}
     [M.TrivialTateCohomology] {n : ℕ} : IsZero ((TateCohomology n).obj M) :=
