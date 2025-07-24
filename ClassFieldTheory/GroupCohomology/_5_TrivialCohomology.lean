@@ -161,18 +161,18 @@ class TrivialTateCohomology [Finite G] (M : Rep R G) : Prop where
     -- have := Finite.of_injective φ inj
     IsZero ((TateCohomology n).obj (M ↓ H.subtype : Rep R H))
 
-#exit
 lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
     [N.TrivialTateCohomology] :
     M.TrivialTateCohomology := by
   constructor
-  intro S _ _ φ hφ n
-  have _ : Finite S := Finite.of_injective φ hφ
-  have : (TateCohomology n).obj (M ↓ φ) ≅ (TateCohomology n).obj (N ↓ φ)
+  intro H _ n
+  -- have _ : Finite S := Finite.of_injective φ hφ
+  have : (TateCohomology n).obj (M ↓ H.subtype) ≅ (TateCohomology n).obj (N ↓ H.subtype)
   · apply (TateCohomology n).mapIso
-    exact (res φ).mapIso f
-  exact (TrivialTateCohomology.isZero _ hφ).of_iso this
+    exact (res H.subtype).mapIso f
+  exact (TrivialTateCohomology.isZero H).of_iso this
 
+#exit
 lemma isZero_of_trivialTateCohomology [Finite G] [DecidableEq G] {M : Rep R G}
     [M.TrivialTateCohomology] {n : ℕ} : IsZero ((TateCohomology n).obj M) :=
   TrivialTateCohomology.isZero (.id G) Function.injective_id
