@@ -186,8 +186,8 @@ noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] 
   simp
   exact Finset.sum_equiv e.symm.toEquiv (fun _ ↦ by simp) <| fun i _ ↦ rfl
 
-def TateCohomology.res_iso {H : Type} [Finite H] [Group H] [Finite G] {M : Rep R G} (e : H ≃* G)
-    (n : ℤ) [DecidableEq G] [DecidableEq H] :
+def TateCohomology.res_iso {H : Type} [Fintype H] [Group H] [Fintype G] {M : Rep R G} (e : H ≃* G)
+    (n : ℤ) :
     ((tateCohomology n).obj (M ↓ e.toMonoidHom.range.subtype)) ≅
     ((tateCohomology n).obj (M ↓ e.toMonoidHom)) where
   hom := sorry --TateCohomology.map e
