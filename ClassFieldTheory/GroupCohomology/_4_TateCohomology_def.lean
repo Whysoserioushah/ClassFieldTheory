@@ -71,24 +71,23 @@ lemma norm_comm {A B : Rep R G} (f : A ⟶ B) :
   ext
   simp [Representation.norm, hom_comm_apply]
 
+/-- This is the map from the coinvariants of `M : Rep R G` to the invariants, induced by the map
+`m ↦ ∑ g : G, M.ρ g m`. -/
+def tateNorm (M : Rep R G) : (inhomogeneousChains M).X 0 ⟶ (inhomogeneousCochains M).X 0 :=
+  (chainsIso₀ M).hom ≫ M.norm ≫ (cochainsIso₀ M).inv
 
 lemma tateNorm_eq (M : Rep R G) :
     (ModuleCat.ofHom <| Finsupp.lsum R <| fun _ ↦ LinearMap.pi fun _ ↦ M.norm.hom) =
-    (chainsIso₀ M).hom ≫ M.norm ≫ (cochainsIso₀ M).inv := by
+    tateNorm M := by
   ext
   simp only [Rep.norm, ModuleCat.hom_ofHom, Finsupp.lsum_comp_lsingle, pi_apply, ChainComplex.of_x,
     CochainComplex.of_x, chainsIso₀, LinearEquiv.toModuleIso_hom, cochainsIso₀,
     LinearEquiv.toModuleIso_inv, ModuleCat.hom_comp, LinearMap.coe_comp, LinearEquiv.coe_coe,
     LinearEquiv.funUnique_symm_apply, Function.comp_apply, Finsupp.lsingle_apply,
-    Finsupp.LinearEquiv.finsuppUnique_apply, uniqueElim_const]
+    Finsupp.LinearEquiv.finsuppUnique_apply, uniqueElim_const, tateNorm]
   congr
   simp only [Finsupp.single_apply, left_eq_ite_iff]
   exact fun h ↦ False.elim <| h <| Unique.eq_default _
-
-/-- This is the map from the coinvariants of `M : Rep R G` to the invariants, induced by the map
-`m ↦ ∑ g : G, M.ρ g m`. -/
-def tateNorm (M : Rep R G) : (inhomogeneousChains M).X 0 ⟶ (inhomogeneousCochains M).X 0 :=
-  (chainsIso₀ M).hom ≫ M.norm ≫ (cochainsIso₀ M).inv
 
 @[reassoc (attr := simp), elementwise]
 lemma norm_comp_d_eq_zero (M : Rep R G) : M.norm ≫ d₀₁ M = 0 := by
@@ -134,10 +133,11 @@ def tateComplex (M : Rep R G) : CochainComplex (ModuleCat R) ℤ :=
   CochainComplex.ConnectData.cochainComplex (tateComplexConnectData M)
 
 lemma tateComplex_d_neg_one (M : Rep R G) : (tateComplex M).d (-1) 0 = tateNorm M := by
-  unfold tateComplex
-  change (ModuleCat.ofHom <| Finsupp.lsum R <| fun _ ↦ LinearMap.pi fun _ ↦ M.norm.hom) = _
-  rw [tateNorm_eq]
+  rw [← tateNorm_eq]
   rfl
+
+lemma tateComplexConnecDate_d₀_eq (M : Rep R G) :
+    (tateComplexConnectData M).d₀ = tateNorm M := by rw [← tateNorm_eq]; rfl
 
 lemma tateComplex_d_ofNat (M : Rep R G) (n : ℕ) :
     (tateComplex M).d n (n + 1) = (inhomogeneousCochains M).d n (n + 1) := rfl
@@ -158,6 +158,7 @@ def tateComplex.normNatEnd : End (forget₂ (Rep R G) (ModuleCat R)) where
 @[reducible]
 def tateComplex.map {X Y : Rep R G} (φ : X ⟶ Y) : (tateComplex X ⟶ tateComplex Y) :=
   CochainComplex.ConnectData.map _ _ (chainsMap (.id G) φ) (cochainsFunctor R G |>.map φ) <| by
+
     -- simp [tateNorm, tateComplex.norm_comm_assoc (B := Y)]
     -- rfl
     sorry

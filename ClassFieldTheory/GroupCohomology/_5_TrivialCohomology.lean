@@ -169,29 +169,28 @@ lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
 --TODO : add simp lemma for Rep.norm.hom
 noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] [Finite G]
     [Finite H] [DecidableEq G] [DecidableEq H] {M : Rep R G} {N : Rep R H} (e : G ≃* H)
-    (φ : M ⟶ (Action.res (ModuleCat R) e).obj N)
-    (φ' : (Action.res (ModuleCat R) e.symm).obj M ⟶ N) :=
+    (φ : M ⟶ (Action.res (ModuleCat R) e).obj N) :=
   CochainComplex.ConnectData.map (tateComplexConnectData M) (tateComplexConnectData N)
-  (groupHomology.chainsMap e φ) (groupCohomology.cochainsMap e.symm φ') <| by
-  ext f0 (m : M) h0;
-  have : (N ↓ e.toMonoidHom).V = N.V := rfl
+  (groupHomology.chainsMap e φ)
+  (groupCohomology.cochainsMap e.symm ⟨φ.hom, fun h ↦ by simpa using φ.comm (e.symm h)⟩) <| by
+  ext f0 (m : M) h0
   simp [cochainsMap_f, Rep.norm, Representation.norm]
   have := φ.comm
-  have := φ'.comm
-  simp [ModuleCat.hom_ext_iff] at this
+  have (h : H) := ModuleCat.hom_ext_iff.1 (φ.comm (e.symm h))
+  simp only [Action.res_obj_V, ModuleCat.hom_comp, ρ_hom, Action.res_obj_ρ, MonoidHom.coe_comp,
+    MonoidHom.coe_coe, Function.comp_apply, MulEquiv.apply_symm_apply] at this
   conv_lhs =>
-    enter [2];
-    intro h;
-    rw [← LinearMap.comp_apply]
+    enter [2]
+    intro h
+    rw[← LinearMap.comp_apply, ← this]
+  simp
+  exact Finset.sum_equiv e.symm.toEquiv (fun _ ↦ by simp) <| fun i _ ↦ rfl
 
-  sorry
-
-
-#exit
-def TateCohomology.res_iso {H : Type} [Finite H] [Group H] [Finite G] {M : Rep R G} (f : H →* G)
-    (n : ℤ) [DecidableEq G] [DecidableEq H] (hf : Function.Injective f) :
-    ((TateCohomology n).obj (M ↓ f.range.subtype)) ≅ ((TateCohomology n).obj (M ↓ f)) where
-  hom := sorry
+def TateCohomology.res_iso {H : Type} [Finite H] [Group H] [Finite G] {M : Rep R G} (e : H ≃* G)
+    (n : ℤ) [DecidableEq G] [DecidableEq H] :
+    ((tateCohomology n).obj (M ↓ e.toMonoidHom.range.subtype)) ≅
+    ((tateCohomology n).obj (M ↓ e.toMonoidHom)) where
+  hom := sorry --TateCohomology.map e
   inv := sorry
   hom_inv_id := sorry
   inv_hom_id := sorry
