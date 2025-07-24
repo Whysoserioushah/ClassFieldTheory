@@ -96,26 +96,58 @@ lemma trivialCohomology_iff_res {M : Rep R G} :
   mpr h := h (f := .id G) Function.injective_id
 
 class TrivialHomology (M : Rep R G) : Prop where
-  isZero ⦃H : Type⦄ [Group H] (φ : H →* G) (inj : Function.Injective φ) {n : ℕ} :
-    IsZero (groupHomology (M ↓ φ : Rep R H) (n + 1))
+  isZero (H : Subgroup G) {n : ℕ} :
+    IsZero (groupHomology (M ↓ H.subtype) (n + 1))
+
+lemma _root_.groupHomology.map_congr.{u} {k G H : Type u} [CommRing k] [Group G] [Group H]
+    {A : Rep k G} {B : Rep k H} (f1 f2 : G →* H) (φ1 : A ⟶ (Action.res (ModuleCat k) f1).obj B)
+    (φ2 : A ⟶ (Action.res (ModuleCat k) f2).obj B) (h1 : f1 = f2) (h2 : φ1.hom = φ2.hom) (n : ℕ) :
+    groupHomology.map f1 φ1 n = groupHomology.map f2 φ2 n := by
+  subst h1
+  congr
+  ext
+  simp [h2]
 
 lemma TrivialHomology.of_iso {M N : Rep R G} (f : M ≅ N) [N.TrivialHomology] :
     M.TrivialHomology := by
   constructor
-  intro S _ φ inj n
-  have : (groupHomology.functor R S n.succ).obj (M ↓ φ) ≅
-      (groupHomology.functor R S n.succ).obj (N ↓ φ)
-  · apply (groupHomology.functor R S n.succ).mapIso
-    exact (res φ).mapIso f
-  exact (isZero _ inj).of_iso this
+  intro H n
+  exact (isZero _).of_iso <| (groupHomology.functor R H n.succ).mapIso <| (res H.subtype).mapIso f
+
+noncomputable def res_iso_range_res_homology (M : Rep R G) {H : Type} [Group H] (f : H →* G)
+    (n : ℕ) (hf : Function.Injective f) :
+    groupHomology (M ↓ f.range.subtype) n ≅ groupHomology (M ↓ f) n where
+  hom := groupHomology.map (MonoidHom.ofInjective hf).symm.toMonoidHom ⟨𝟙 M.V, by simp⟩ _
+  inv := groupHomology.map f.rangeRestrict ⟨𝟙 M.V, by simp⟩ _
+  hom_inv_id := by
+    rw [← groupHomology.map_comp]
+    erw [CategoryTheory.Functor.map_id, Category.comp_id]
+    rw [← groupHomology.map_id]
+    exact groupHomology.map_congr _ _ _ _ (by ext; simp) (by simp) n
+  inv_hom_id := by
+    rw [← groupHomology.map_comp, ← groupHomology.map_id]
+    refine groupHomology.map_congr _ _ _ _ (by
+      ext x;
+      unfold MonoidHom.rangeRestrict
+      erw [(MonoidHom.ofInjective hf).symm_apply_apply, MonoidHom.id_apply]) (by simp) n
+
+lemma TrivialHomology.of_injective {M : Rep R G} {H : Type} [Group H] (f : H →* G) (n : ℕ)
+    (hn : n ≠ 0) (hf : Function.Injective f) [M.TrivialHomology] :
+    IsZero (groupHomology (M ↓ f) n) := by
+  cases n with
+  | zero => tauto
+  | succ n => exact IsZero.of_iso (@TrivialHomology.isZero R G _ _ M _ f.range n) <|
+    (res_iso_range_res_homology M f (n + 1) hf).symm
 
 protected lemma TrivialHomology.res (M : Rep R G) {H : Type} [Group H] {f : H →* G}
     (hf : Function.Injective f) [M.TrivialHomology] : (M ↓ f).TrivialHomology where
-  isZero _ _ φ hφ _ := isZero (f.comp φ) (hf.comp hφ)
+  isZero H n :=
+    TrivialHomology.of_injective (f.comp H.subtype) (n + 1) (by omega) <|
+      show Function.Injective (f ∘ _) from Function.Injective.comp hf H.subtype_injective
 
 lemma isZero_of_trivialHomology [DecidableEq G] {M : Rep R G} [M.TrivialHomology] {n : ℕ} :
     IsZero (groupHomology M (n + 1)) :=
-  TrivialHomology.isZero (φ := .id G) Function.injective_id
+  TrivialHomology.of_injective (.id G) n.succ (by omega) Function.injective_id
 
 lemma trivialHomology_iff_res {M : Rep R G} :
     M.TrivialHomology ↔
@@ -124,12 +156,12 @@ lemma trivialHomology_iff_res {M : Rep R G} :
   mp _ _ _ _ inj := .res M inj
   mpr h := h (f := .id G) Function.injective_id
 
-#exit
 class TrivialTateCohomology [Finite G] (M : Rep R G) : Prop where
-  isZero (H : Subgroup G)  {n : ℤ} :
-    have := Finite.of_injective φ inj
-    IsZero ((TateCohomology n).obj (M ↓ φ : Rep R H))
+  isZero (H : Subgroup G) [DecidableEq H] {n : ℤ} :
+    -- have := Finite.of_injective φ inj
+    IsZero ((TateCohomology n).obj (M ↓ H.subtype : Rep R H))
 
+#exit
 lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
     [N.TrivialTateCohomology] :
     M.TrivialTateCohomology := by
