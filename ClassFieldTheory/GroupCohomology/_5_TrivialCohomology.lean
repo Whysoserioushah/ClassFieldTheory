@@ -47,14 +47,15 @@ lemma _root_.groupCohomology.map_congr.{u} {k G H : Type u} [CommRing k] [Group 
 
 noncomputable def res_iso_range_res (M : Rep R G) {H : Type} [Group H] (f : H →* G)
     (n : ℕ) (hf : Function.Injective f) :
-    groupCohomology (M ↓ f.range.subtype) n ≅ groupCohomology (M ↓ f) n where
+    groupCohomology (M ↓ f.range.subtype) n ≅
+      groupCohomology (M ↓ f) n where
   hom := groupCohomology.map f.rangeRestrict (𝟙 (M ↓ f)) _
   inv := groupCohomology.map (MonoidHom.ofInjective hf).symm.toMonoidHom ⟨𝟙 M.V, by simp⟩ _
   hom_inv_id := by
     rw [← groupCohomology.map_comp]
     erw [CategoryTheory.Functor.map_id, Category.id_comp] --andrew did this
     rw [← groupCohomology.map_id]
-    refine groupCohomology.map_congr _ _ _ _ (by ext; simp) (by simp) n
+    exact groupCohomology.map_congr _ _ _ _ (by ext; simp) (by simp) n
   inv_hom_id := by
     rw [← groupCohomology.map_comp, ← groupCohomology.map_id]
     refine groupCohomology.map_congr _ _ _ _ (by
@@ -158,21 +159,73 @@ lemma trivialHomology_iff_res {M : Rep R G} :
 
 class TrivialTateCohomology [Finite G] (M : Rep R G) : Prop where
   isZero (H : Subgroup G) [DecidableEq H] {n : ℤ} :
-    -- have := Finite.of_injective φ inj
     IsZero ((TateCohomology n).obj (M ↓ H.subtype : Rep R H))
 
 lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
     [N.TrivialTateCohomology] :
-    M.TrivialTateCohomology := by
-  constructor
-  intro H _ n
-  -- have _ : Finite S := Finite.of_injective φ hφ
-  have : (TateCohomology n).obj (M ↓ H.subtype) ≅ (TateCohomology n).obj (N ↓ H.subtype)
-  · apply (TateCohomology n).mapIso
-    exact (res H.subtype).mapIso f
-  exact (TrivialTateCohomology.isZero H).of_iso this
+    M.TrivialTateCohomology := ⟨fun H ↦ (TrivialTateCohomology.isZero _).of_iso <|
+    (TateCohomology _).mapIso <| (res H.subtype).mapIso f⟩
 
--- def 
+section
+
+universe u v
+
+open CategoryTheory Limits
+
+@[simps]
+def _root_.CochainComplex.ConnectData.map {C : Type u} [Category.{v, u} C] [HasZeroMorphisms C]
+    {K₁ K₂ : ChainComplex C ℕ} {L₁ L₂ : CochainComplex C ℕ}
+    (h₁ : L₁.ConnectData K₁) (h₂ : L₂.ConnectData K₂) (fK : K₁ ⟶ K₂) (fL : L₁ ⟶ L₂)
+    (h : fK.f 0 ≫ h₂.d₀ = h₁.d₀ ≫ fL.f 0) : h₁.cochainComplex ⟶ h₂.cochainComplex where
+  f i := match i with
+    | .ofNat n => fL.f n
+    | .negSucc n => fK.f n
+  comm' i j (hij : _ = _) := by
+    obtain n | (_ | n) := i
+    · obtain rfl : j = .ofNat (n + 1) := by simp_all
+      simp [-Int.ofNat_eq_coe, -Int.ofNat_eq_natCast, CochainComplex.ConnectData.d]
+    · obtain rfl : j = 0 := by omega
+      simp [h]
+    · obtain rfl : j = .negSucc n := by omega
+      simp
+
+end
+
+noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] [Finite G]
+    [Finite H] [DecidableEq G] [DecidableEq H] {M : Rep R G} {N : Rep R H} (f : G →* H)
+    (f' : H →* G) (φ : M ⟶ (Action.res (ModuleCat R) f).obj N)
+    (φ' : (Action.res (ModuleCat R) f').obj M ⟶ N) :=
+  CochainComplex.ConnectData.map (TateComplex.ConnectData M) (TateComplex.ConnectData N)
+  (groupHomology.chainsMap f φ) (groupCohomology.cochainsMap f' φ') <| by
+  ext f0 (m : M) g0;
+  simp [TateComplex.ConnectData, TateNorm, Rep.norm, groupHomology.zeroChainsIso,
+    groupCohomology.cochainsIso₀, groupCohomology.cochainsMap_f, Representation.norm]
+
+
+  sorry
+
+def TateCohomology.res_iso {H : Type} [Finite H] [Group H] [Finite G] {M : Rep R G} (f : H →* G)
+    (n : ℤ) [DecidableEq G] [DecidableEq H] (hf : Function.Injective f) :
+    ((TateCohomology n).obj (M ↓ f.range.subtype)) ≅ ((TateCohomology n).obj (M ↓ f)) where
+  hom := sorry
+  inv := sorry
+  hom_inv_id := sorry
+  inv_hom_id := sorry
+
+-- noncomputable def _root_.TateCohomology.cochainmap {G H : Type} [Group H] [Group G]
+--     [Finite G] [Finite H] [DecidableEq G] [DecidableEq H] {M : Rep R G} {N : Rep R H} (f : G →* H)
+--     (f' : H →* G) (φ' : M ⟶ (Action.res (ModuleCat R) f).obj N) :
+--     groupCohomology.TateComplex M ⟶ groupCohomology.TateComplex N where
+--   f i := match i with
+--   | .ofNat (n + 1) => ModuleCat.ofHom <|
+--       φ'.hom.hom.compLeft _ ∘ₗ LinearMap.funLeft _ _ (fun x : Fin _ → H ↦ (f' ∘ x))
+--   | 0 => sorry--ModuleCat.ofHom
+--   -- (by dsimp; sosry)
+--   -- | .negSucc n => ModuleCat.ofHom <|
+--     Finsupp.mapRange.linearMap φ'.hom.hom ∘ₗ
+--       Finsupp.lmapDomain _ _ (fun (x : Fin _ → G) ↦ (fun i ↦ f (x i)))
+--   comm' := sorry
+
 #exit
 lemma isZero_of_trivialTateCohomology [Finite G] [DecidableEq G] {M : Rep R G}
     [M.TrivialTateCohomology] {n : ℕ} : IsZero ((TateCohomology n).obj M) :=
