@@ -167,8 +167,8 @@ lemma TrivialTateCohomology.of_iso [Finite G] {M N : Rep R G} (f : M ≅ N)
     (tateCohomology _).mapIso <| (res H.subtype).mapIso f⟩
 
 --TODO : add simp lemma for Rep.norm.hom
-noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] [Finite G]
-    [Finite H] [DecidableEq G] [DecidableEq H] {M : Rep R G} {N : Rep R H} (e : G ≃* H)
+noncomputable abbrev _root_.TateCohomology.cochainsmap {G H : Type} [Group G] [Group H] [Fintype G]
+    [Fintype H] {M : Rep R G} {N : Rep R H} (e : G ≃* H)
     (φ : M ⟶ (Action.res (ModuleCat R) e).obj N) :=
   CochainComplex.ConnectData.map (tateComplexConnectData M) (tateComplexConnectData N)
   (groupHomology.chainsMap e φ)
@@ -186,13 +186,49 @@ noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] 
   simp
   exact Finset.sum_equiv e.symm.toEquiv (fun _ ↦ by simp) <| fun i _ ↦ rfl
 
-def TateCohomology.res_iso {H : Type} [Fintype H] [Group H] [Fintype G] {M : Rep R G} (e : H ≃* G)
+noncomputable abbrev _root_.TateCohomology.map {G H : Type} [Group G] [Group H] [Fintype G] [Fintype H]
+    {M : Rep R G} {N : Rep R H} (e : G ≃* H) (φ : M ⟶ (Action.res (ModuleCat R) e).obj N)
     (n : ℤ) :
-    ((tateCohomology n).obj (M ↓ e.toMonoidHom.range.subtype)) ≅
-    ((tateCohomology n).obj (M ↓ e.toMonoidHom)) where
-  hom := sorry --TateCohomology.map e
-  inv := sorry
-  hom_inv_id := sorry
+    (tateCohomology n).obj M ⟶ (tateCohomology n).obj N :=
+  HomologicalComplex.homologyMap (TateCohomology.cochainsmap e φ) _
+
+#check MonoidHom.range_eq_top
+
+-- set_option maxHeartbeats 2000000 in
+noncomputable def TateCohomology.res_iso {H : Type} [Fintype H] [Group H] [Fintype G]
+    {M : Rep R G} (e : G ≃* H) (n : ℤ) :
+    ((tateCohomology n).obj (M ↓ e.symm.toMonoidHom.range.subtype)) ≅
+    ((tateCohomology n).obj (M ↓ e.symm.toMonoidHom)) where
+  hom := @TateCohomology.map R _ e.symm.toMonoidHom.range H _ _
+    (Fintype.ofEquiv G <| Subgroup.topEquiv.symm.trans (MulEquiv.subgroupCongr
+    (MonoidHom.range_eq_top.2 e.symm.surjective).symm : _ ≃* e.symm.toMonoidHom.range)) _
+    (M ↓ e.symm.toMonoidHom.range.subtype) (M ↓ e.symm.toMonoidHom) ((MulEquiv.subgroupCongr
+    (MonoidHom.range_eq_top.2 e.symm.surjective) |>.trans Subgroup.topEquiv: _ ≃* G).trans e)
+    ⟨𝟙 M.V, by simp⟩ n
+  inv := by
+    have := @TateCohomology.map R _ H e.symm.toMonoidHom.range _ _ _ (Fintype.ofEquiv G <|
+      Subgroup.topEquiv.symm.trans (MulEquiv.subgroupCongr (MonoidHom.range_eq_top.2
+      e.symm.surjective).symm : _ ≃* e.symm.toMonoidHom.range))
+      (M ↓ e.symm) (M ↓ e.symm.toMonoidHom.range.subtype) (e.symm.trans <|
+      Subgroup.topEquiv.symm.trans <| MulEquiv.subgroupCongr <|
+      MonoidHom.range_eq_top.2 e.symm.surjective |>.symm) ⟨𝟙 M.V, by simp⟩ n
+    exact this
+  hom_inv_id := by
+    simp only [MulEquiv.toMonoidHom_eq_coe, MulEquiv.coe_monoidHom_trans]
+    -- ext x
+    match n with
+    | .ofNat (n + 1) => sorry
+    | .ofNat 0 =>
+      simp only [TateCohomology.map,
+        TateCohomology.cochainsmap, CochainComplex.ConnectData.map,
+        CochainComplex.ConnectData.cochainComplex_X, MulEquiv.coe_monoidHom_trans]
+      -- suffices HomologicalComplex.homologyMap (@HomologicalComplex.Hom.f ℕ (ModuleCat R)
+        -- (ModuleCat.moduleCategory R) Preadditive.preadditiveHasZeroMorphisms
+        -- (ComplexShape.up ℕ) (inhomogeneousCochains (M ↓ ↑e.symm))
+        -- (inhomogeneousCochains (M ↓ e.symm.toMonoidHom.range.subtype))
+        -- (cochainsMap (_ : e.symm.toMonoidHom.range →* H) _)) 0 ≫ _ = _ by sorry
+      sorry
+    | .negSucc n => sorry
   inv_hom_id := sorry
 
 -- noncomputable def _root_.TateCohomology.cochainmap {G H : Type} [Group H] [Group G]
