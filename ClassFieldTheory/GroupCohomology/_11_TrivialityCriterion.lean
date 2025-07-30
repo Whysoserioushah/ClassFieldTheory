@@ -107,24 +107,19 @@ set_option maxHeartbeats 600000 in
 /--
 If `H²ⁿ⁺²(H,M)` and `H²ᵐ⁺¹(H,M)` are both zero for every subgroup `H` of `G` then `M` is acyclic.
 -/
-theorem groupCohomology.trivialCohomology_of_even_of_odd_of_solvable [Finite G] [IsSolvable G]
+theorem groupCohomology.trivialCohomology_of_even_of_odd_of_solvable [Fintype G] [IsSolvable G]
     (M : Rep R G) (n m : ℕ)
     (h_even : ∀ (H : Type) [Group H] {φ : H →* G} (inj : Function.Injective φ) [DecidableEq H],
       IsZero (groupCohomology (M ↓ φ) (2 * n + 2)))
     (h_odd : ∀ (H : Type) [Group H] {φ : H →* G} (inj : Function.Injective φ) [DecidableEq H],
       IsZero (groupCohomology (M ↓ φ) (2 * m + 1))) :
-    M.TrivialCohomology := by
-  constructor
-  intro H _ _ φ inj k
-  let S := φ.range
-  classical
-  specialize h_even φ.range φ.range.subtype_injective 
-  specialize h_odd φ.range φ.range.subtype_injective 
-  -- have :  groupCohomology (M ↓ φ) (k + 1) ≅ groupCohomology (M ↓ φ.range.subtype) (k + 1) := 
-    -- isoOfQuasiIsoAt _ _
-    -- sorry
-  -- have : (M ↓ (φ.range.subtype)).V = (M ↓ φ).V := by simp
-  -- have : (M ↓ (φ.range.subtype)).ρ = (M ↓ φ).ρ := by simp
+    M.TrivialCohomology where
+  isZero H n := by
+    refine @solvable_ind G _ _ _
+      (fun H1 ↦ IsZero (groupCohomology (M ↓ H1.subtype) (n + 1)))
+      (isZero_groupCohomology_succ_of_subsingleton _ _) ?_ H
+    intro H1 H2 h12 h1 h2 h3
+    sorry
 
   /-
   This is proved by induction on `H`.
@@ -142,7 +137,7 @@ theorem groupCohomology.trivialCohomology_of_even_of_odd_of_solvable [Finite G] 
   By the periodicity of the cohomology of a cyclic group, `Hʳ(H/K,Mᴷ)` is zero for all `r > 0`.
   Therefore `Hʳ(H,M)=0` for all `r > 0`.
   -/
-  sorry
+
 
 theorem groupCohomology.trivialCohomology_of_even_of_odd [Finite G]
     (M : Rep R G) (n m : ℕ)
@@ -168,7 +163,7 @@ instance Rep.dimensionShift.down_trivialCohomology [Finite G] (M : Rep R G) [M.T
     (down.obj M).TrivialCohomology := sorry
 
 instance Rep.tateCohomology_of_trivialCohomology [Finite G] (M : Rep R G) [M.TrivialCohomology] :
-    M.TrivialtateCohomology := sorry
+    M.TrivialTateCohomology := sorry
 
 instance Rep.trivialHomology_of_trivialCohomology [Finite G] (M : Rep R G) [M.TrivialCohomology] :
     M.TrivialHomology := sorry
