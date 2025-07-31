@@ -45,6 +45,24 @@ lemma _root_.groupCohomology.map_congr.{u} {k G H : Type u} [CommRing k] [Group 
   ext
   simp [h2]
 
+noncomputable def groupCohomology.mapIso {H : Type} [Fintype H] [Group H] [Fintype G]
+    {M : Rep R G} (e : G ≃* H) {N : Rep R H}
+    (e' : M.V ≅ N.V)
+    (he' : ∀ (g : G), M.2 g ≫ e'.hom = e'.hom ≫ N.2 (e g)) (n : ℕ) :
+    groupCohomology M n ≅ groupCohomology N n where
+  hom := groupCohomology.map e.symm ⟨e'.hom, by aesop⟩ n
+  inv := groupCohomology.map e ⟨e'.inv, by aesop (add simp [Iso.comp_inv_eq])⟩ n
+  hom_inv_id := by
+    rw [← groupCohomology.map_comp, ← groupCohomology.map_id]
+    apply groupCohomology.map_congr
+    · simp
+    · simp
+  inv_hom_id := by
+    rw [← groupCohomology.map_comp, ← groupCohomology.map_id]
+    apply groupCohomology.map_congr
+    · simp
+    · simp
+
 noncomputable def res_iso_range_res (M : Rep R G) {H : Type} [Group H] (f : H →* G)
     (n : ℕ) (hf : Function.Injective f) :
     groupCohomology (M ↓ f.range.subtype) n ≅
@@ -210,114 +228,48 @@ lemma _root_.groupCohomology.cochainsMap_congr {k G H : Type} [CommRing k] [Grou
   ext
   simp [h2]
 
-noncomputable def TateCohomology.res_iso' {H : Type} [Fintype H] [Group H] [Fintype G]
-    {M : Rep R G} (e : G ≃* H) (n : ℤ) :
-    (tateCohomology n).obj M ≅
-    ((tateCohomology n).obj (M ↓ e.symm.toMonoidHom)) where
-  hom := TateCohomology.map e ⟨𝟙 M.V, by simp⟩ n
-  inv := TateCohomology.map e.symm ⟨𝟙 M.V, by simp⟩ n
-  hom_inv_id := by
-    unfold TateCohomology.map TateCohomology.cochainsmap;
-    rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
-    conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
-    congr
-    · rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-      exact groupHomology.chainsMap_congr _ _ _ _ (by simp) (by simp)
-    · rw [← groupCohomology.cochainsMap_comp, ← groupCohomology.cochainsMap_id]
-      exact groupCohomology.cochainsMap_congr _ _ _ _ (by simp) (by simp)
-  inv_hom_id := by
-    unfold TateCohomology.map TateCohomology.cochainsmap;
-    rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
-    conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
-    congr
-    · rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-      exact groupHomology.chainsMap_congr _ _ _ _ (by simp) (by simp)
-    · rw [← groupCohomology.cochainsMap_comp, ← groupCohomology.cochainsMap_id]
-      exact groupCohomology.cochainsMap_congr _ _ _ _ (by simp) (by simp)
-
 noncomputable def TateCohomology.res_iso {H : Type} [Fintype H] [Group H] [Fintype G]
-    {M : Rep R G} (e : G ≃* H) (n : ℤ) :
-    ((tateCohomology n).obj (M ↓ e.symm.toMonoidHom.range.subtype)) ≅
-    ((tateCohomology n).obj (M ↓ e.symm.toMonoidHom)) where
-  hom := @TateCohomology.map R _ e.symm.toMonoidHom.range H _ _
-    (Fintype.ofEquiv G <| Subgroup.topEquiv.symm.trans (MulEquiv.subgroupCongr
-    (MonoidHom.range_eq_top.2 e.symm.surjective).symm : _ ≃* e.symm.toMonoidHom.range)) _
-    (M ↓ e.symm.toMonoidHom.range.subtype) (M ↓ e.symm.toMonoidHom) ((MulEquiv.subgroupCongr
-    (MonoidHom.range_eq_top.2 e.symm.surjective) |>.trans Subgroup.topEquiv: _ ≃* G).trans e)
-    ⟨𝟙 M.V, by simp⟩ n
-  inv := by
-    have := @TateCohomology.map R _ H e.symm.toMonoidHom.range _ _ _ (Fintype.ofEquiv G <|
-      Subgroup.topEquiv.symm.trans (MulEquiv.subgroupCongr (MonoidHom.range_eq_top.2
-      e.symm.surjective).symm : _ ≃* e.symm.toMonoidHom.range))
-      (M ↓ e.symm) (M ↓ e.symm.toMonoidHom.range.subtype) (e.symm.trans <|
-      Subgroup.topEquiv.symm.trans <| MulEquiv.subgroupCongr <|
-      MonoidHom.range_eq_top.2 e.symm.surjective |>.symm) ⟨𝟙 M.V, by simp⟩ n
-    exact this
+    {M : Rep R G} (e : G ≃* H) {N : Rep R H}
+    (e' : M.V ≅ N.V)
+    (he' : ∀ (g : G), M.2 g ≫ e'.hom = e'.hom ≫ N.2 (e g)) (n : ℤ) :
+    (tateCohomology n).obj M ≅
+    ((tateCohomology n).obj N) where
+  hom := TateCohomology.map e ⟨e'.hom, by aesop⟩ n
+  inv := TateCohomology.map e.symm ⟨e'.inv, e.surjective.forall.mpr <| by
+      dsimp
+      simp_rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp, he',
+        e.apply_symm_apply, implies_true]⟩ n
   hom_inv_id := by
-    simp
-    unfold TateCohomology.map TateCohomology.cochainsmap
+    unfold TateCohomology.map TateCohomology.cochainsmap;
     rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
     conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
     congr
     · rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-      exact groupHomology.chainsMap_congr _ _ _ _ (by ext; simp) (by simp)
+      exact groupHomology.chainsMap_congr _ _ _ _ (by simp) (by simp)
     · rw [← groupCohomology.cochainsMap_comp, ← groupCohomology.cochainsMap_id]
-      exact groupCohomology.cochainsMap_congr _ _ _ _ (by ext; simp) (by simp)
+      exact groupCohomology.cochainsMap_congr _ _ _ _ (by simp) (by simp)
   inv_hom_id := by
-    simp
-    unfold TateCohomology.map TateCohomology.cochainsmap
+    unfold TateCohomology.map TateCohomology.cochainsmap;
     rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
     conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
     congr
     · rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-      exact groupHomology.chainsMap_congr _ _ _ _ (by ext; simp) (by simp)
+      exact groupHomology.chainsMap_congr _ _ _ _ (by simp) (by simp)
     · rw [← groupCohomology.cochainsMap_comp, ← groupCohomology.cochainsMap_id]
-      exact groupCohomology.cochainsMap_congr _ _ _ _ (by ext; simp) (by simp)
+      exact groupCohomology.cochainsMap_congr _ _ _ _ (by simp) (by simp)
 
-@[reducible] def _root_.MonoidHom.rangeRestrict_range_iso {G H : Type*} [Group G] [Group H] (f : H →* G) :
-    f.rangeRestrict.range ≃* f.range where
-  toFun x := x.1
-  invFun := fun x ↦ ⟨x, ⟨x.2.choose, by simp [Subtype.ext_iff, x.2.choose_spec]⟩⟩
-  left_inv _ := by simp
-  right_inv _ := by simp
-  map_mul' _ _ := by simp
+def isoMk {M N : Rep R G} (e' : M.V ≅ N.V) (hg : ∀ g : G, M.2 g ≫ e'.hom = e'.hom ≫ N.2 g) :
+    M ≅ N where
+  hom := { hom := e'.hom, comm := hg }
+  inv := { hom := e'.inv,
+           comm g := by simp_rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp, hg] }
 
-noncomputable abbrev _root_.MonoidHom.range_fintype {G H : Type*} [Group G] [Group H]
-    (f : H →* G) [Fintype G] : Fintype f.range :=
-  Fintype.ofInjective f.range.subtype f.range.subtype_injective
-
-noncomputable abbrev _root_.TateCohomology.res_iso_res_res [Fintype G] {M : Rep R G} {H : Type}
-    [Fintype H] [Group H] (f : H →* G) (n : ℤ) :
-    (tateCohomology n).obj (M ↓ f.range.subtype ↓ f.rangeRestrict.range.subtype) ≅
-    (tateCohomology n).obj (M ↓ f.range.subtype) where
-  hom := @TateCohomology.map R _ _ _ _ _
-    (@MonoidHom.range_fintype _ _ _ _ f.rangeRestrict (MonoidHom.range_fintype f))
-    (MonoidHom.range_fintype f) _ _ (MonoidHom.rangeRestrict_range_iso f)
-    ⟨𝟙 M.V, by simp⟩ n
-  inv := @TateCohomology.map R _ _ _ _ _ (MonoidHom.range_fintype f)
-    (@MonoidHom.range_fintype _ _ _ _ f.rangeRestrict (MonoidHom.range_fintype f))
-    _ _ (MonoidHom.rangeRestrict_range_iso f).symm ⟨𝟙 M.V, by simp⟩ n
-  hom_inv_id := by
-    unfold TateCohomology.map TateCohomology.cochainsmap
-    rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
-    conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
-    congr
-    rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-    exact groupHomology.chainsMap_congr _ _ _ _ (by ext; simp) (by simp)
-  inv_hom_id := by
-    unfold TateCohomology.map TateCohomology.cochainsmap
-    rw [← HomologicalComplex.homologyMap_comp, ← CochainComplex.ConnectData.map_comp]
-    conv_rhs => erw [← HomologicalComplex.homologyMap_id, ← CochainComplex.ConnectData.map_id]
-    congr
-    rw [← groupHomology.chainsMap_comp, ← groupHomology.chainsMap_id]
-    exact groupHomology.chainsMap_congr _ _ _ _ (by ext; simp) (by simp)
-
+attribute [local instance] Fintype.ofFinite in
 lemma TrivialTateCohomology.of_injective [Fintype G] {M : Rep R G} {H : Type} [Fintype H]
     [Group H] (f : H →* G) (n : ℤ) (hf : Function.Injective f)
     [M.TrivialTateCohomology] : IsZero ((tateCohomology n).obj (M ↓ f)) :=
-  .of_iso (isZero (M := M) f.range (n := n)) <| @TateCohomology.res_iso R f.range _ _ H _ _
-    (MonoidHom.range_fintype f) (M ↓ f.range.subtype) (MonoidHom.ofInjective hf).symm n|>.symm.trans
-    (TateCohomology.res_iso_res_res f n)
+  .of_iso (isZero (M := M) f.range (n := n)) <| TateCohomology.res_iso
+    (MonoidHom.ofInjective hf) (Iso.refl _) (by aesop) _
 
 lemma isZero_of_trivialTateCohomology [Fintype G] {M : Rep R G}
     [M.TrivialTateCohomology] {n : ℕ} : IsZero ((tateCohomology n).obj M) :=
