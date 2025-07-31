@@ -196,10 +196,8 @@ lemma H2_aug_isZero [Finite G] [NoZeroSMulDivisors ℕ R] : IsZero (H2 (aug R G)
   /-
   This follows from `cohomology_aug_succ_iso` and `groupCohomology.H1_isZero_of_trivial`.
   -/
-  
-  sorry
 
-#check Submodule.span_induction
+  sorry
 
 /--
 If `H` is a subgroup of a finite group `G` then the connecting homomorphism

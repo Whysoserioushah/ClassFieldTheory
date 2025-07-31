@@ -118,9 +118,11 @@ theorem groupCohomology.trivialCohomology_of_even_of_odd_of_solvable [Fintype G]
     refine @solvable_ind G _ _ _
       (fun H1 ↦ IsZero (groupCohomology (M ↓ H1.subtype) (n + 1)))
       (isZero_groupCohomology_succ_of_subsingleton _ _) ?_ H
-    intro H1 H2 h12 h1 h2 h3
-    sorry
+    intro K H h12 h1 h2 h3
+    have := inflationRestriction (R := R)
+      (QuotientGroup.mk'_surjective (K.subgroupOf H)) n (M ↓ H.subtype)
 
+    sorry
   /-
   This is proved by induction on `H`.
   If `H` is the trivial subgroup then the result is true.
