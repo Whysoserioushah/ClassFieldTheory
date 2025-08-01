@@ -262,7 +262,7 @@ def isoMk {M N : Rep R G} (e' : M.V ≅ N.V) (hg : ∀ g : G, M.2 g ≫ e'.hom =
     M ≅ N where
   hom := { hom := e'.hom, comm := hg }
   inv := { hom := e'.inv,
-           comm g := by simp_rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp, hg] }
+           comm g := by rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp, hg] }
 
 attribute [local instance] Fintype.ofFinite in
 lemma TrivialTateCohomology.of_injective [Fintype G] {M : Rep R G} {H : Type} [Fintype H]
@@ -283,7 +283,7 @@ instance TrivialTateCohomology.to_trivialCohomology [Fintype G] {M : Rep R G}
 instance TrivialtateCohomology.to_trivialHomology [Fintype G] {M : Rep R G}
     [M.TrivialTateCohomology] : M.TrivialHomology where
   isZero H n := (TrivialTateCohomology.isZero H (n := - n - 2)).of_iso <|
-      (tateCohomology.isoGroupHomology n|>.app (M ↓ H.subtype)).symm
+    (tateCohomology.isoGroupHomology n|>.app (M ↓ H.subtype)).symm
 
 lemma TrivialTateCohomology.of_cases [Fintype G] {M : Rep R G}
     [M.TrivialCohomology] [M.TrivialHomology]
