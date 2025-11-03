@@ -2,6 +2,7 @@ import ClassFieldTheory.Cohomology.IndCoind.Finite
 import ClassFieldTheory.Cohomology.IndCoind.TrivialCohomology
 import ClassFieldTheory.Cohomology.TateCohomology
 import ClassFieldTheory.Mathlib.RepresentationTheory.Rep
+import Mathlib.Algebra.Homology.ShortComplex.FunctorEquivalence
 
 /-!
 We define functors `up` and `down` from `Rep R G` to itself.
@@ -116,10 +117,29 @@ lemma up_shortExact : (upShortComplex.obj M).ShortExact where
   mono_f := inferInstanceAs (Mono (coind₁'_ι.app M))
   epi_g := coequalizer.π_epi
 
+/--
+`upShortComplex.obj M` is a short exact sequence of representations.
+-/
+lemma up_shortExact' :
+    ((ShortComplex.functorEquivalence _ _).inverse.obj
+        (upShortComplex (R := R) (G := G))).ShortExact := by
+  simp_rw [lemmalemma]
+  intro i
+  exact up_shortExact ..
+
 lemma up_shortExact_res {H : Type} [Group H] [DecidableEq G] (φ : H →* G) :
     ((upShortComplex.obj M).map (res φ)).ShortExact := by
   rw [res_respectsShortExact]
   exact up_shortExact M
+
+/--
+`upShortComplex.obj M` is a short exact sequence of representations.
+-/
+lemma up_shortExact_res' {H : Type} [Group H] [DecidableEq G] (φ : H →* G) :
+    (((ShortComplex.functorEquivalence _ _).inverse.obj
+      (upShortComplex (R := R) (G := G))).map
+        ((Functor.whiskeringRight _ _ _).obj (Rep.res φ))).ShortExact :=
+  (res_respectsShortExact' ..).mpr (up_shortExact' ..)
 
 abbrev up_π : coind₁' ⟶ up (R := R) (G := G) where
   app _             := (upShortComplex.obj _).g

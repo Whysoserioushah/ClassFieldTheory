@@ -110,6 +110,23 @@ lemma res_respectsShortExact {H : Type u} [Group H] (φ : H →* G) (S : ShortCo
       epi_g := by simpa using h₃
     }
 
+lemma lemmalemma {C D : Type*} [Category C]
+    [Category D] [Abelian D] (S : ShortComplex (C ⥤ D)) :
+    S.ShortExact ↔ ∀ i, (S.map ((evaluation _ _).obj i)).ShortExact := by
+  sorry
+
+instance {C D E : Type*} [Category C] [Category D] [Category E] (F : D ⥤ E)
+    [HasZeroMorphisms D] [HasZeroMorphisms E] [F.PreservesZeroMorphisms] :
+    ((Functor.whiskeringRight C D E).obj F).PreservesZeroMorphisms := sorry
+
+lemma res_respectsShortExact' {C : Type*} [Category C]
+    {H : Type u} [Group H] (φ : H →* G) (S : ShortComplex (C ⥤ Rep R G)) :
+    (S.map ((Functor.whiskeringRight _ _ _).obj (Rep.res φ))).ShortExact ↔ S.ShortExact := by
+  simp [lemmalemma]
+  refine forall_congr' fun i ↦ ?_
+  rw [← res_respectsShortExact φ]
+  rfl
+
 lemma res_ofShortExact {H : Type u} [Group H] (φ : H →* G) {S : ShortComplex (Rep R G)}
     (hS : S.ShortExact) : (S.map (Rep.res φ)).ShortExact := by
   rwa [res_respectsShortExact]
