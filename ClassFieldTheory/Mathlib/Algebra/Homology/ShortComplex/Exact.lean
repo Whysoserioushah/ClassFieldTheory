@@ -13,27 +13,23 @@ variable {C D : Type*} [Category* C] [Category* D]
 section Abelian
 variable [Abelian C]
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The cokernel of the first map of an exact complex in an abelian category is naturally isomorphic
 to the coimage of the second map.
 
 Note that we use the extra functor `F` to avoid talking about the category of exact complex. -/
--- @[simps!]
 def kerIsoIm (F : D ⥤ ShortComplex C) (hF : ∀ d, (F.obj d).Exact) :
     F ⋙ gFunctor ⋙ ker C ≅ F ⋙ fFunctor ⋙ im :=
-  NatIso.ofComponents (fun X ↦
-    have := (hF X).mono_cokernelDesc
-    kernel.congr (F.obj X).g
-        (cokernel.π (F.obj X).f ≫
-          cokernel.desc (F.obj X).f (F.obj X).g (F.obj X).zero)
-        (cokernel.π_desc (F.obj X).f (F.obj X).g (F.obj X).zero).symm ≪≫
-      kernelCompMono (cokernel.π (F.obj X).f)
-        (cokernel.desc (F.obj X).f (F.obj X).g (F.obj X).zero))
+  NatIso.ofComponents (fun X ↦ {
+    hom := kernel.lift (cokernel.π (F.obj X).f) (kernel.ι (F.obj X).g)
+      ((F.obj X).exact_iff_kernel_ι_comp_cokernel_π_zero.mp (hF X))
+    inv := kernel.lift (F.obj X).g (kernel.ι (cokernel.π (F.obj X).f)) (by
+      conv_rhs => rw [← cokernel.π_desc (F.obj X).f (F.obj X).g (F.obj X).zero]
+      rw [← Category.assoc, kernel.condition, zero_comp])
+    hom_inv_id := by apply equalizer.hom_ext; simp
+    inv_hom_id := by apply equalizer.hom_ext; simp })
     fun {X Y} φ ↦ by
-      have := (hF X).mono_cokernelDesc
-      have := (hF Y).mono_cokernelDesc
       apply equalizer.hom_ext
-      simp [fFunctor, gFunctor, Arrow.mk_hom, kernel.lift_ι]
+      simp [fFunctor, gFunctor]
 
 -- /-- The cokernel of the first map of an exact complex in an abelian category is naturally isomorphic
 -- to the coimage of the second map.
