@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 public import Mathlib.RepresentationTheory.Rep.Iso
 
+/-! -/
 public section
 
 universe w w' u u' v v'
@@ -21,6 +22,7 @@ open CategoryTheory ShortComplex ShortExact Limits
 
 -- instance : (forget₂ (Rep.{w} k G) Ab).Additive := ⟨rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `CategoryTheory.Limits.compNatIso` weirdly uses `Functor.IsEquivalence` -/
 def CategoryTheory.Limits.compNatIso' {C D : Type*} [Category* C] [Category* D] [HasZeroMorphisms C]
     {X Y : C} {f : X ⟶ Y} [HasZeroMorphisms D] (F : C ⥤ D) [F.PreservesZeroMorphisms] :
@@ -30,7 +32,7 @@ def CategoryTheory.Limits.compNatIso' {C D : Type*} [Category* C] [Category* D] 
     match j with
     | .zero => Iso.refl _
     | .one => Iso.refl _
-  NatIso.ofComponents app <| by rintro ⟨i⟩ ⟨j⟩ <;> rintro (g | g) <;> simp [app]
+  NatIso.ofComponents app <| by rintro ⟨i⟩ ⟨j⟩ <;> rintro (g | g) <;> simp [app] <;> rfl
 
 attribute [local instance] Functor.PreservesHomology.preservesKernel
   Functor.PreservesHomology.preservesCokernel in
