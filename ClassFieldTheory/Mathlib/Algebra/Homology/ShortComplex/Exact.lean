@@ -33,7 +33,7 @@ def kerIsoIm (F : D ⥤ ShortComplex C) (hF : ∀ d, (F.obj d).Exact) :
       have := (hF X).mono_cokernelDesc
       have := (hF Y).mono_cokernelDesc
       apply equalizer.hom_ext
-      simp [fFunctor, gFunctor]
+      simp [fFunctor, gFunctor, Arrow.mk_hom, kernel.lift_ι]
 
 -- /-- The cokernel of the first map of an exact complex in an abelian category is naturally isomorphic
 -- to the coimage of the second map.
