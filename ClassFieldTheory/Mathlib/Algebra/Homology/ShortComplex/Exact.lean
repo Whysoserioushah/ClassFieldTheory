@@ -23,12 +23,16 @@ def kerIsoIm (F : D ⥤ ShortComplex C) (hF : ∀ d, (F.obj d).Exact) :
     F ⋙ gFunctor ⋙ ker C ≅ F ⋙ fFunctor ⋙ im :=
   NatIso.ofComponents (fun X ↦
     have := (hF X).mono_cokernelDesc
-    kernel.congr _ _ (by simp) ≪≫
-      kernelCompMono _ (cokernel.desc (F.obj X).f (F.obj X).g (F.obj X).zero))
+    kernel.congr (F.obj X).g
+        (cokernel.π (F.obj X).f ≫
+          cokernel.desc (F.obj X).f (F.obj X).g (F.obj X).zero)
+        (cokernel.π_desc (F.obj X).f (F.obj X).g (F.obj X).zero).symm ≪≫
+      kernelCompMono (cokernel.π (F.obj X).f)
+        (cokernel.desc (F.obj X).f (F.obj X).g (F.obj X).zero))
     fun {X Y} φ ↦ by
       have := (hF X).mono_cokernelDesc
       have := (hF Y).mono_cokernelDesc
-      ext
+      apply equalizer.hom_ext
       simp
 
 -- /-- The cokernel of the first map of an exact complex in an abelian category is naturally isomorphic
