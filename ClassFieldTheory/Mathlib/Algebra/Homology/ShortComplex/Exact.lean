@@ -13,7 +13,7 @@ variable {C D : Type*} [Category* C] [Category* D]
 section Abelian
 variable [Abelian C]
 
--- set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency false in
 /-- The cokernel of the first map of an exact complex in an abelian category is naturally isomorphic
 to the coimage of the second map.
 
